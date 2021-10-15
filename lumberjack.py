@@ -1,4 +1,7 @@
 from operator import itemgetter
+from os import curdir
+import time
+import heapq
 
 class Tree:
     def __init__(self, x : int, y : int, height : int, thickness : int, unit_weight : int, unit_value : int):
@@ -27,6 +30,19 @@ class Tree:
     
     def printTree(self):
         print("X:", self.x, "Y:", self.y, "Height:", self.height, "Weight", self.weight(), "Value", self.value())
+
+class Node(object):
+    def __init__(self, tree: Tree, direction: str, value: int, score: float):
+        self.tree = tree
+        self.direction = direction
+        self.value = value
+        self.score = score
+
+    def __repr__(self):
+        return f'Node value: {self.score}'
+
+    def __gt__(self, other):
+        return self.score > other.score
 
 class GridPoint:
     def __init__(self, x : int, y : int):
@@ -64,7 +80,9 @@ class Grid:
             self.grid[tree.x][tree.y].tree = tree
 
     def score(self, value : int, time : int) -> int:
-        return value/time
+        x = value/time
+        points = x + 2/x
+        return x
 
     def getScore(self) -> list:
         scores = []
@@ -156,37 +174,42 @@ class Grid:
 
     
     def findMax(self, scores : list) -> list:
+        heap = []
         for score in scores:
             score.append(self.score(score[2], score[0].time(self.curx, self.cury)))
-        scores = sorted(scores, key=itemgetter(3), reverse=True)
-        return scores
+            obj = Node(score[0], score[1], score[2], -score[3])
+            heap.append(obj)
+        heapq.heapify(heap)
+        # scores = sorted(scores, key=itemgetter(3), reverse=True)
+        return heap
         
 
     def moveToTree(self, scores : list):
         # for i in scores:
         #     print("x:", i[0].x, "y:", i[0].y, i[1], i[2], i[3])
         flag = False
-        for potential in scores:
-            if potential[0].time(self.curx, self.cury) < self.time:
-                self.updateTime(potential[0].time(self.curx, self.cury))
-                if self.curx > potential[0].x:
-                    while self.curx > potential[0].x:
+        while scores:
+            potential = heapq.heappop(scores)
+            if potential.tree.time(self.curx, self.cury) < self.time:
+                self.updateTime(potential.tree.time(self.curx, self.cury))
+                if self.curx > potential.tree.x:
+                    while self.curx > potential.tree.x:
                         print(Actions.steps[1])
                         self.curx -= 1
-                elif self.curx < potential[0].x:
-                    while self.curx < potential[0].x:
+                elif self.curx < potential.tree.x:
+                    while self.curx < potential.tree.x:
                         print(Actions.steps[3])
                         self.curx += 1
-                if self.cury > potential[0].y:
-                    while self.cury > potential[0].y:
+                if self.cury > potential.tree.y:
+                    while self.cury > potential.tree.y:
                         print(Actions.steps[4])
                         self.cury -= 1
-                elif self.cury < potential[0].y:
-                    while self.cury < potential[0].y:
+                elif self.cury < potential.tree.y:
+                    while self.cury < potential.tree.y:
                         print(Actions.steps[2])
                         self.cury += 1
                 # print(self.curx, self.cury)
-                self.cutTree(potential[0], potential[1])
+                self.cutTree(potential.tree, potential.direction)
                 flag = True
                 break
         return flag
@@ -298,4 +321,11 @@ if __name__ == "__main__":
     # grid.printGrid()
     # grid.printTrees()
     grid.solve()
+    # start_time = time.time()
+    # flag = True
+    # difference = 0
+    # while flag and difference < 50:
+    #     flag = grid.moveToTree(grid.findMax(grid.getScore()))
+    #     current_time = time.time()
+    #     difference = current_time - start_time
     # grid.printGrid()
