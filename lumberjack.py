@@ -60,10 +60,78 @@ class Grid:
     def score(self, value : int, time : int) -> int:
         return value/time
 
-    def getScore(self):
+    def getScore(self) -> list:
+        scores = []
         for tree in self.trees:
             if not tree.isTreeCut:
-                pass
+                for direction in Actions.moves.keys():
+                    score = [tree]
+                    if direction == 1:
+                        point = 0
+                        score.append(Actions.moves[direction])
+                        tree_queue = [tree]
+                        while tree_queue:
+                            current_tree = tree_queue.pop(0)
+                            point += current_tree.value()
+                            for i in range(current_tree.x, max(0,current_tree.x - current_tree.height), -1):
+                                potential_tree = self.grid[i][current_tree.y].tree
+                                if potential_tree != None:
+                                    if not potential_tree.isTreeCut:
+                                        if potential_tree.weight() < current_tree.weight():
+                                            tree_queue.append(potential_tree)
+                                        break
+                        score.append(point)
+                        scores.append(score)
+                    elif direction == 2:
+                        point = 0
+                        score.append(Actions.moves[direction])
+                        tree_queue = [tree]
+                        while tree_queue:
+                            current_tree = tree_queue.pop(0)
+                            point += current_tree.value()
+                            for i in range(current_tree.y, min(current_tree.y + current_tree.height, n)):
+                                potential_tree = self.grid[current_tree.x][i].tree
+                                if potential_tree != None:
+                                    if not potential_tree.isTreeCut:
+                                        if potential_tree.weight() < current_tree.weight():
+                                            tree_queue.append(potential_tree)
+                                        break
+                        score.append(point)
+                        scores.append(score)
+                    elif direction == 3:
+                        point = 0
+                        score.append(Actions.moves[direction])
+                        tree_queue = [tree]
+                        while tree_queue:
+                            current_tree = tree_queue.pop(0)
+                            point += current_tree.value()
+                            for i in range(current_tree.y, min(current_tree.x + current_tree.height, n)):
+                                potential_tree = self.grid[i][current_tree.y].tree
+                                if potential_tree != None:
+                                    if not potential_tree.isTreeCut:
+                                        if potential_tree.weight() < current_tree.weight():
+                                            tree_queue.append(potential_tree)
+                                        break
+                        score.append(point)
+                        scores.append(score)
+                    elif direction == 4:
+                        point = 0
+                        score.append(Actions.moves[direction])
+                        tree_queue = [tree]
+                        while tree_queue:
+                            current_tree = tree_queue.pop(0)
+                            point += current_tree.value()
+                            for i in range(current_tree.y, max(current_tree.y - current_tree.height, 0), -1):
+                                potential_tree = self.grid[current_tree.x][i].tree
+                                if potential_tree != None:
+                                    if not potential_tree.isTreeCut:
+                                        if potential_tree.weight() < current_tree.weight():
+                                            tree_queue.append(potential_tree)
+                                        break
+                        score.append(point)
+                        scores.append(score)
+        return scores
+
     
     def findMax(self):
         pass
@@ -79,6 +147,10 @@ class Grid:
                 else:
                     print("0 ", end="")
             print("\n", end="")
+    
+    def printTrees(self):
+        for tree in self.trees:
+            print("X:", tree.x, "Y:", tree.y, "Height:", tree.height, "Weight", tree.weight(), "Value", tree.value())
 
 if __name__ == "__main__":
     t, n, k = map(int, input().split())
@@ -92,4 +164,7 @@ if __name__ == "__main__":
         trees.append(tree)
     grid.initialise_grid(trees)
     grid.printGrid()
+    grid.printTrees()
+    for i in grid.getScore():
+        print("x:", i[0].x, "y:", i[0].y, i[1], i[2])
 
