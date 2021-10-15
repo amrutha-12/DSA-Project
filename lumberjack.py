@@ -162,9 +162,10 @@ class Grid:
         return scores
         
 
-    def cutTree(self, scores : list):
+    def moveToTree(self, scores : list):
         # for i in scores:
         #     print("x:", i[0].x, "y:", i[0].y, i[1], i[2], i[3])
+        flag = False
         for potential in scores:
             if potential[0].time(self.curx, self.cury) < self.time:
                 self.updateTime(potential[0].time(self.curx, self.cury))
@@ -185,7 +186,87 @@ class Grid:
                         print(Actions.steps[2])
                         self.cury += 1
                 # print(self.curx, self.cury)
+                self.cutTree(potential[0], potential[1])
+                flag = True
                 break
+        return flag
+    
+    def cutTree(self, tree : Tree, direction : str):
+        print(direction)
+        if direction == Actions.moves[1]:
+            tree_queue = [tree]
+            while tree_queue:
+                current_tree = tree_queue.pop(0)
+                self.grid[current_tree.x][current_tree.y].tree = None
+                current_tree.cutTree()
+                # print("Current Tree", Actions.moves[direction])
+                # current_tree.printTree()
+                for i in range(current_tree.x, max(0,current_tree.x - current_tree.height), -1):
+                    potential_tree = self.grid[i][current_tree.y].tree
+                    if potential_tree != None:
+                        if not potential_tree.isTreeCut and current_tree != potential_tree:
+                            # print("Potential Tree")
+                            # potential_tree.printTree()
+                            if potential_tree.weight() < current_tree.weight():
+                                tree_queue.append(potential_tree)
+                            break
+        if direction == Actions.moves[2]:
+            tree_queue = [tree]
+            while tree_queue:
+                current_tree = tree_queue.pop(0)
+                self.grid[current_tree.x][current_tree.y].tree = None
+                current_tree.cutTree()
+                # print("Current Tree", Actions.moves[direction])
+                # current_tree.printTree()
+                for i in range(current_tree.y, min(current_tree.y + current_tree.height, n)):
+                    # print(self.grid[current_tree.x][i])
+                    potential_tree = self.grid[current_tree.x][i].tree
+                    if potential_tree != None:
+                        if not potential_tree.isTreeCut and current_tree != potential_tree:
+                            # print("Potential Tree")
+                            # potential_tree.printTree()
+                            if potential_tree.weight() < current_tree.weight():
+                                tree_queue.append(potential_tree)
+                            break
+        if direction == Actions.moves[3]:
+            tree_queue = [tree]
+            while tree_queue:
+                current_tree = tree_queue.pop(0)
+                self.grid[current_tree.x][current_tree.y].tree = None
+                current_tree.cutTree()
+                # print("Current Tree", Actions.moves[direction])
+                # current_tree.printTree()
+                for i in range(current_tree.y, min(current_tree.x + current_tree.height, n)):
+                    potential_tree = self.grid[i][current_tree.y].tree
+                    if potential_tree != None:
+                        if not potential_tree.isTreeCut and current_tree != potential_tree:
+                            # print("Potential Tree")
+                            # potential_tree.printTree()
+                            if potential_tree.weight() < current_tree.weight():
+                                tree_queue.append(potential_tree)
+                            break
+        if direction == Actions.moves[4]:
+            tree_queue = [tree]
+            while tree_queue:
+                current_tree = tree_queue.pop(0)
+                self.grid[current_tree.x][current_tree.y].tree = None
+                current_tree.cutTree()
+                # print("Current Tree", Actions.moves[direction])
+                # current_tree.printTree()
+                for i in range(current_tree.y, max(current_tree.y - current_tree.height, 0), -1):
+                    potential_tree = self.grid[current_tree.x][i].tree
+                    if potential_tree != None:
+                        if not potential_tree.isTreeCut and current_tree != potential_tree:
+                            # print("Potential Tree")
+                            # potential_tree.printTree()
+                            if potential_tree.weight() < current_tree.weight():
+                                tree_queue.append(potential_tree)
+                            break
+
+    def solve(self):
+        flag = True
+        while flag:
+            flag = self.moveToTree(self.findMax(self.getScore()))
 
     def printGrid(self):
         for j in range(self.grid_size-1, -1, -1):
@@ -214,8 +295,7 @@ if __name__ == "__main__":
         tree = Tree(x, y, h, d, c, p)
         trees.append(tree)
     grid.initialise_grid(trees)
-    grid.printGrid()
-    grid.printTrees()
-    grid.cutTree(grid.findMax(grid.getScore()))
-    
-
+    # grid.printGrid()
+    # grid.printTrees()
+    grid.solve()
+    # grid.printGrid()
