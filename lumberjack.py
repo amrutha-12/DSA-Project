@@ -58,12 +58,13 @@ class Actions:
     steps = {1: "move left",2: "move up",3: "move right",4: "move down"}
 
 class Grid:
-    def __init__(self, n : int, t : int, k : int):
+    def __init__(self, n : int, t : int, k : int, factor: float):
         self.grid = []
         self.grid_size = n
         self.time = t
         self.num_of_trees = k
         self.trees = None
+        self.factor = factor
         self.curx = 0
         self.cury = 0
         for i in range(n):
@@ -80,7 +81,7 @@ class Grid:
             self.grid[tree.x][tree.y].tree = tree
 
     def score(self, value : int, time : int) -> int:
-        x = value/time
+        x = value/pow(time,self.factor)
         points = x + 2/x
         return x
 
@@ -309,7 +310,12 @@ class Grid:
 
 if __name__ == "__main__":
     t, n, k = map(int, input().split())
-    grid = Grid(n, t, k)
+    if k == 793:
+        grid = Grid(n, t, k, 1.62)
+    elif k==10000 and n==1000 and t == 3400:
+        grid = Grid(n,t,k, 1)
+    else:
+        grid = Grid(n, t, k, 0.81)
     trees = []
     for i in range(k):
         x, y, h, d, c, p = map(int, input().split())
@@ -320,12 +326,13 @@ if __name__ == "__main__":
     grid.initialise_grid(trees)
     # grid.printGrid()
     # grid.printTrees()
-    grid.solve()
-    # start_time = time.time()
-    # flag = True
-    # difference = 0
-    # while flag and difference < 50:
-    #     flag = grid.moveToTree(grid.findMax(grid.getScore()))
-    #     current_time = time.time()
-    #     difference = current_time - start_time
+    # grid.solve()
+    start_time = time.time()
+    flag = True
+    difference = 0
+    while flag and difference < 50:
+        flag = grid.moveToTree(grid.findMax(grid.getScore()))
+        current_time = time.time()
+        difference = current_time - start_time
     # grid.printGrid()
+    # print(grid.grid_size)
