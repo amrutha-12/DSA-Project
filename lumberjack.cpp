@@ -72,7 +72,7 @@ class Grid{
         }
         float score(int points, int time)
         {
-            return (float)points/(float)pow(time, factor);
+            return (float)points/(float)pow(time, factor) + 2*(float)pow(time, factor)/(float)points;
         }
         void initForest(vector <Tree> jungle)
         {
