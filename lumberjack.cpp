@@ -45,13 +45,14 @@ public:
     }
     void printTree()
     {
-        cout<<"X: "<<x<<" Y: "<<y<<" Height"<<height<<" Weight: "<<this->retWeight()<<" Value: "<<this->retValue()<<endl;
+        cout<<"X: "<<x<<" Y: "<<y<<" Height: "<<height<<" Thickness: "<<thickness<<" Weight: "<<this->retWeight()<<" Value: "<<this->retValue()<<endl;
     }
 };
 
 
 class Grid{
     int time;
+    int total_time;
     float factor;
     public:
         vector <vector <int>> grid;
@@ -68,6 +69,7 @@ class Grid{
             current_x = x;
             current_y = y;
             time = t;
+            total_time = t;
             factor = f;
         }
         float score(int points, int time)
@@ -225,6 +227,70 @@ class Grid{
             time -= t;
         }
 
+        int calculatePoints(vector <pair<float, pair <Tree, int>>> list)
+        {
+            bool flag = false;
+            for(auto p:list)
+            {
+                Tree tree = p.second.first;
+                if(tree.time(this->current_x, this->current_y)<this->time)
+                {
+                    updateTime(tree.time(this->current_x, this->current_y));
+                    if(current_x > tree.x)
+                    {
+                        while(current_x>tree.x)
+                        {
+                            // cout<<"move left"<<endl;
+                            current_x--;
+                        }
+                    }
+                    else if(current_x < tree.x)
+                    {
+                        while(current_x<tree.x)
+                        {
+                            // cout<<"move right"<<endl;
+                            current_x++;
+                        }
+                    }
+                    if(current_y > tree.y)
+                    {
+                        while(current_y>tree.y)
+                        {
+                            // cout<<"move down"<<endl;
+                            current_y--;
+                        }
+                    }
+                    else if(current_y < tree.y)
+                    {
+                        while(current_y<tree.y)
+                        {
+                            // cout<<"move up"<<endl;
+                            current_y++;
+                        }
+                    }
+                    // cout<<cut[p.second.second]<<endl;
+                    cutTree(p.second.first, p.second.second);
+                    flag = true;
+                    break;
+                }
+            }
+            // cout<<time<<endl;
+            return flag;
+        }
+
+        int returnPoints()
+        {
+            int score = 0;
+            for(int i=0;i<forest.size();i++)
+            {
+                if(!grid[forest[i].x][forest[i].y])
+                {
+                    score += forest[i].retValue();
+                }
+            }
+            return score;
+        }
+
         bool moveToTree(vector <pair<float, pair <Tree, int>>> list)
         {
             bool flag = false;
@@ -366,6 +432,66 @@ class Grid{
             }
         }
 
+        void bruteForce()
+        {
+            vector <pair <int, Tree>> scores;
+            for(auto tree:forest)
+            {
+                bool flag = true;
+                // cout<<"Time Taken: "<<tree.time(0,0)<<endl;
+                // tree.printTree();
+                time -= (tree.x + tree.y);
+                current_x = tree.x;
+                current_y = tree.y;
+                // printGrid();
+                while(flag)
+                {
+                    flag = calculatePoints(findMax());
+                }
+                // cout<<"-------------"<<endl;
+                int points = returnPoints();
+                // printGrid();
+                scores.push_back(make_pair(points, tree));
+                resetGrid();
+            }
+            sort(scores.begin(), scores.end(), [](const auto& a, const auto& b) {return a.first > b.first; });
+            // for(auto p:scores)
+            // {
+            //     cout<<p.first<<" ";
+            //     p.second.printTree();
+            // }
+            Tree best_tree = scores[0].second;
+            if(current_y < best_tree.y)
+            {
+                while(current_y<best_tree.y)
+                {
+                    cout<<"move up"<<endl;
+                    current_y++;
+                }
+            }
+            if(current_x < best_tree.x)
+            {
+                while(current_x<best_tree.x)
+                {
+                    cout<<"move right"<<endl;
+                    current_x++;
+                }
+            }
+            time -= (best_tree.x + best_tree.y);
+            solve();
+        }
+
+        void resetGrid()
+        {
+            for(int i=0;i<forest.size();i++)
+            {
+                grid[forest[i].x][forest[i].y] = i+1;
+            }
+            current_y = 0;
+            current_x = 0;
+            time = total_time;
+        }
+
         void solve()
         {
             bool flag = true;
@@ -407,6 +533,13 @@ int main()
     grid.initForest(forest);
     // grid.printGrid();
     // grid.findMax();
-    grid.solve();
+    if(grid_size<250)
+    {
+        grid.bruteForce();
+    }
+    else
+    {
+        grid.solve();
+    }
     return 0;
 }
