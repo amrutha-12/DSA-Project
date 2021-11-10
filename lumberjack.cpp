@@ -1,4 +1,5 @@
 #include <bits/stdc++.h>
+#define BLOCK 5
 
 using namespace std;
 
@@ -56,7 +57,9 @@ class Grid{
     float factor;
     public:
         vector <vector <int>> grid;
+        vector <vector <int>> heuristic;
         vector <Tree> forest;
+        vector <pair <float, pair<Tree, int>>> ptntl;
         int current_x;
         int current_y;
         Grid(int n, int x, int y, int t, float f)
@@ -65,6 +68,7 @@ class Grid{
             {
                 vector <int> row(n, 0);
                 grid.push_back(row);
+                heuristic.push_back(row);
             }
             current_x = x;
             current_y = y;
@@ -72,13 +76,42 @@ class Grid{
             total_time = t;
             factor = f;
         }
-        float score(int points, int time)
+        float score(int points, int time, Tree tree)
         {
-            return (float)points/(float)pow(time, factor) + 2*(float)pow(time, factor)/(float)points;
+            // float ratio = (float)(heuristic[tree.x][tree.y])/(float)pow(time, factor);
+            float ratio = (float)(points)/(float)pow(time, factor);
+            // float ratio = (float)(points+heuristic[tree.x][tree.y])/(float)pow(time, factor);
+            float score = (ratio);
+            return score;
         }
         void initForest(vector <Tree> jungle)
         {
             forest = jungle;
+        }
+        void updateHeuristic(vector <pair <float, pair<Tree, int>>> potential)
+        {
+            int neighborhood = grid.size()/BLOCK;
+            for(auto entry:potential)
+            {
+                // cout<<entry.first<<endl;
+                Tree tree = entry.second.first;
+                for(int i=max(0,tree.x-neighborhood);i<min((int)grid.size(), tree.x+neighborhood); i++)
+                {
+                    for(int j=max(0,tree.y-neighborhood);j<min((int)grid.size(), tree.y+neighborhood); j++)
+                    {
+                        heuristic[i][j] += entry.first/4;
+                    }
+                }
+            }
+            // for(int j=grid.size()-1;j>=0;j--)
+            // {
+            //     for(int i=0;i<grid[j].size();i++)
+            //     {
+            //         cout<<heuristic[i][j]<<" ";
+            //     }
+            //     cout<<endl;
+            // }
+            // cout<<"------------"<<endl;
         }
         void printGrid()
         {
@@ -127,7 +160,7 @@ class Grid{
                                     }
                                 }
                             }
-                            entry.first = score(point,tree.time(current_x, current_y));
+                            entry.first = score(point,tree.time(current_x, current_y), tree);
                             potential.push_back(entry);
                         }
                         if(direction==UP)
@@ -154,7 +187,7 @@ class Grid{
                                     }
                                 }
                             }
-                            entry.first = score(point,tree.time(current_x, current_y));
+                            entry.first = score(point,tree.time(current_x, current_y), tree);
                             potential.push_back(entry);
                         }
                         if(direction==RIGHT)
@@ -181,7 +214,7 @@ class Grid{
                                     }
                                 }
                             }
-                            entry.first = score(point,tree.time(current_x, current_y));
+                            entry.first = score(point,tree.time(current_x, current_y), tree);
                             potential.push_back(entry);
                         }
                         if(direction==DOWN)
@@ -208,7 +241,7 @@ class Grid{
                                     }
                                 }
                             }
-                            entry.first = score(point,tree.time(current_x, current_y));
+                            entry.first = score(point,tree.time(current_x, current_y), tree);
                             potential.push_back(entry);
                         }
                     }
@@ -217,8 +250,10 @@ class Grid{
             sort(potential.begin(), potential.end(), [](const auto& a, const auto& b) {return a.first > b.first; });
             // for(auto i:potential)
             // {
-            //     cout<<"Score: "<<i.first<<" X: "<<i.second.first.x<<" Y: "<<i.second.first.y<<" "<<i.second.second<<endl;
+            //     cout<<"Score: "<<i.first<<" X: "<<i.second.first.x<<" Y: "<<i.second.first.y<<" Direction: "<<i.second.second<<endl;
             // }
+            // ptntl = potential;
+            // updateHeuristic(potential);
             return potential;
         }
 
@@ -512,10 +547,10 @@ int main()
     cut[DOWN] = "cut down";
     int time, grid_size, num_of_trees;
     cin>>time>>grid_size>>num_of_trees;
-    float factor = 0.81;
+    float factor = 0.85;
     if(num_of_trees==793)
     {
-        factor = 1.62;
+        factor = 1.7;
     }
     Grid grid = Grid(grid_size, 0, 0, time, factor);
     // cout<<time<<endl;
